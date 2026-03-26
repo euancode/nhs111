@@ -403,8 +403,52 @@
       <div class="stat-num">9</div>
       <div class="stat-label">lead providers</div>
     </div>
+    <div class="stat" style="border-left:1px solid var(--border); padding-left:28px; cursor:pointer;" title="Click for breakdown" onclick="document.getElementById('cv-breakdown').style.display = document.getElementById('cv-breakdown').style.display === 'none' ? 'block' : 'none'">
+      <div class="stat-num" style="color:#ffd54f">£584m+</div>
+      <div class="stat-label">known contract value ⓘ</div>
+    </div>
   </div>
 </header>
+
+<!-- CONTRACT VALUE BREAKDOWN -->
+<div id="cv-breakdown" style="display:none; background:var(--surface2); border-bottom:1px solid var(--border); padding:16px 40px;">
+  <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:12px;">
+    <span style="font-size:13px; font-weight:800;">Publicly Known Contract Values</span>
+    <span style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace;">Many contracts undisclosed — true total significantly higher</span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+    <div style="background:var(--surface3); border:1px solid var(--border); border-radius:6px; padding:10px 16px; min-width:180px;">
+      <div style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:4px;">PPG — Devon IUC</div>
+      <div style="font-size:18px; font-weight:800; color:#ffd54f;">£163.1m</div>
+      <div style="font-size:10px; color:var(--muted);">8 years · awarded Oct 2024</div>
+    </div>
+    <div style="background:var(--surface3); border:1px solid var(--border); border-radius:6px; padding:10px 16px; min-width:180px;">
+      <div style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:4px;">LAS — NE London IUC</div>
+      <div style="font-size:18px; font-weight:800; color:#ffd54f;">£152.2m</div>
+      <div style="font-size:10px; color:var(--muted);">7 years (3+2+2) · from Aug 2026</div>
+    </div>
+    <div style="background:var(--surface3); border:1px solid var(--border); border-radius:6px; padding:10px 16px; min-width:180px;">
+      <div style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:4px;">IC24 — Cambridge & Peterborough</div>
+      <div style="font-size:18px; font-weight:800; color:#ffd54f;">£103.5m</div>
+      <div style="font-size:10px; color:var(--muted);">5 years · awarded Nov 2025</div>
+    </div>
+    <div style="background:var(--surface3); border:1px solid var(--border); border-radius:6px; padding:10px 16px; min-width:180px;">
+      <div style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:4px;">SECAmb/IC24 — Kent, Medway & Sussex</div>
+      <div style="font-size:18px; font-weight:800; color:#ffd54f;">£90.5m</div>
+      <div style="font-size:10px; color:var(--muted);">Combined CAS contract · from Oct 2020</div>
+    </div>
+    <div style="background:var(--surface3); border:1px solid var(--border); border-radius:6px; padding:10px 16px; min-width:180px;">
+      <div style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:4px;">NEAS — NE & N. Cumbria</div>
+      <div style="font-size:18px; font-weight:800; color:#ffd54f;">£75m</div>
+      <div style="font-size:10px; color:var(--muted);">5 years · £15m/yr · from Oct 2025</div>
+    </div>
+    <div style="background:rgba(255,213,79,0.08); border:1px solid rgba(255,213,79,0.25); border-radius:6px; padding:10px 16px; min-width:180px; display:flex; flex-direction:column; justify-content:center;">
+      <div style="font-size:11px; color:#ffd54f; font-family:'Space Mono',monospace; margin-bottom:4px;">TOTAL (known)</div>
+      <div style="font-size:22px; font-weight:800; color:#ffd54f;">£584m+</div>
+      <div style="font-size:10px; color:var(--muted);">5 disclosed contracts only<br>NWAS, YAS, SCAS, DHU, HUC, PPG (London) undisclosed</div>
+    </div>
+  </div>
+</div>
 
 <div class="main">
   <!-- MAP + LEGEND -->
