@@ -414,6 +414,14 @@
       <div class="stat-num" style="color:#ffd54f">£584m+</div>
       <div class="stat-label">known contract value ⓘ</div>
     </div>
+    <div class="stat" style="border-left:1px solid var(--border); padding-left:28px; cursor:pointer;" title="Click to view procurement radar" onclick="document.getElementById('procurement-radar').scrollIntoView({behavior:'smooth'})">
+      <div class="stat-num" style="color:var(--las)">1</div>
+      <div class="stat-label">active tender ⓘ</div>
+    </div>
+    <div class="stat" style="cursor:pointer;" title="Click to view procurement radar" onclick="document.getElementById('procurement-radar').scrollIntoView({behavior:'smooth'})">
+      <div class="stat-num" style="color:var(--dhu)">2</div>
+      <div class="stat-label">imminent procurements ⓘ</div>
+    </div>
   </div>
 </header>
 
@@ -458,56 +466,114 @@
 </div>
 
 <!-- PROCUREMENT RADAR -->
-<div style="background:var(--surface); border-bottom:1px solid var(--border); padding:20px 40px;">
-  <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:14px;">
+<div id="procurement-radar" style="background:var(--surface); border-bottom:1px solid var(--border); padding:20px 40px;">
+  <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:6px;">
     <span style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;">Procurement Radar</span>
-    <span style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace;">Top 3 upcoming contract procurements · England 2025/26</span>
+    <span style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace;">All NHS 111 contract procurements · England 2024–2026</span>
   </div>
-  <div style="display:flex; flex-wrap:wrap; gap:12px;">
+  <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+    <span style="font-size:11px; font-family:'Space Mono',monospace;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--las); margin-right:5px;"></span>1 active tender</span>
+    <span style="font-size:11px; font-family:'Space Mono',monospace;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--dhu); margin-right:5px;"></span>2 imminent / overdue</span>
+    <span style="font-size:11px; font-family:'Space Mono',monospace;"><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#4caf50; margin-right:5px;"></span>4 recently awarded (2024–26)</span>
+  </div>
 
-    <!-- #1 London NEL -->
-    <div style="flex:1 1 280px; background:var(--surface2); border:1px solid rgba(252,129,129,0.4); border-left:3px solid var(--las); border-radius:8px; padding:14px 18px;">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-        <span style="background:rgba(252,129,129,0.15); color:var(--las); font-size:10px; font-weight:800; font-family:'Space Mono',monospace; padding:2px 8px; border-radius:4px;">ACTIVE TENDER</span>
-        <span style="font-size:10px; color:var(--muted); font-family:'Space Mono',monospace;">London · NEL ICB</span>
+  <!-- ACTIVE -->
+  <div style="font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--las); margin-bottom:8px;">Active Tender</div>
+  <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px;">
+    <div style="flex:1 1 320px; background:var(--surface2); border:1px solid rgba(252,129,129,0.4); border-left:3px solid var(--las); border-radius:8px; padding:14px 18px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="background:rgba(252,129,129,0.15); color:var(--las); font-size:10px; font-weight:800; font-family:'Space Mono',monospace; padding:2px 8px; border-radius:4px;">ACTIVE TENDER</span>
+          <span style="font-size:10px; color:var(--muted); font-family:'Space Mono',monospace;">London · NEL ICB</span>
+        </div>
+        <a href="https://www.find-tender.service.gov.uk/Notice/017276-2025" target="_blank" rel="noopener" style="font-size:10px; color:var(--nhs-light); font-family:'Space Mono',monospace; text-decoration:none; border:1px solid var(--border); border-radius:4px; padding:2px 8px;">Find a Tender ↗</a>
       </div>
       <div style="font-size:15px; font-weight:800; margin-bottom:4px;">NE London IUC — LAS Contract</div>
-      <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">Tendering now · new contract Aug 2026 · £152m · 7 years (3+2+2)</div>
+      <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">New contract 1 Aug 2026 · £152.2m · 7 years (3+2+2) · ITT deadline Jul 2025 · managed by NHS London Commercial Hub</div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">Provider: LAS (incumbent)</div>
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">Commissioner: NEL ICB</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">LAS (incumbent)</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">NEL ICB</div>
         <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace; color:#ffd54f;">ICB merger Apr 2026 ⚠</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">Ref: PRJ2016</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMMINENT / OVERDUE -->
+  <div style="font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--dhu); margin-bottom:8px;">Imminent / Overdue</div>
+  <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px;">
+
+    <div style="flex:1 1 280px; background:var(--surface2); border:1px solid rgba(246,173,85,0.3); border-left:3px solid var(--dhu); border-radius:8px; padding:14px 18px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="background:rgba(246,173,85,0.12); color:var(--dhu); font-size:10px; font-weight:800; font-family:'Space Mono',monospace; padding:2px 8px; border-radius:4px;">OVERDUE</span>
+          <span style="font-size:10px; color:var(--muted); font-family:'Space Mono',monospace;">Midlands · Black Country ICB</span>
+        </div>
+        <a href="https://blackcountry.icb.nhs.uk/news-and-events/latest-news/new-provider-nhs111-service" target="_blank" rel="noopener" style="font-size:10px; color:var(--nhs-light); font-family:'Space Mono',monospace; text-decoration:none; border:1px solid var(--border); border-radius:4px; padding:2px 8px;">ICB notice ↗</a>
+      </div>
+      <div style="font-size:15px; font-weight:800; margin-bottom:4px;">West Midlands IUC — DHU Contract</div>
+      <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">18-month interim from Mar 2023, repeatedly extended — full competitive tender not yet published · ~25% of England's 111 volume</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">DHU (incumbent)</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">~5m calls/yr at risk</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace; color:#ffd54f;">No tender published ⚠</div>
       </div>
     </div>
 
-    <!-- #2 East of England -->
     <div style="flex:1 1 280px; background:var(--surface2); border:1px solid rgba(104,211,145,0.3); border-left:3px solid var(--huc); border-radius:8px; padding:14px 18px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
         <span style="background:rgba(104,211,145,0.12); color:var(--huc); font-size:10px; font-weight:800; font-family:'Space Mono',monospace; padding:2px 8px; border-radius:4px;">IMMINENT</span>
         <span style="font-size:10px; color:var(--muted); font-family:'Space Mono',monospace;">East of England · Multiple ICBs</span>
       </div>
       <div style="font-size:15px; font-weight:800; margin-bottom:4px;">EoE Boundary Realignment Procurements</div>
-      <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">ICB mergers Apr 2026 trigger contract re-alignment · HUC areas at risk · IC24 expanding</div>
+      <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">ICB mergers Apr 2026 force contract re-alignment · HUC holding Herts/Beds/W.Essex contracts at renewal risk · Norfolk+Suffolk ICB triggers fresh procurement</div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">HUC (Herts/Beds) — renewal risk</div>
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">IC24 C&amp;P — new Nov 2025</div>
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace; color:#ffd54f;">Norfolk+Suffolk ICB merge ⚠</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">HUC (renewal risk)</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">IC24 (C&amp;P, new Oct 2025)</div>
+        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace; color:#ffd54f;">Norfolk+Suffolk merge ⚠</div>
       </div>
     </div>
 
-    <!-- #3 Midlands West -->
-    <div style="flex:1 1 280px; background:var(--surface2); border:1px solid rgba(246,173,85,0.3); border-left:3px solid var(--dhu); border-radius:8px; padding:14px 18px;">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-        <span style="background:rgba(246,173,85,0.12); color:var(--dhu); font-size:10px; font-weight:800; font-family:'Space Mono',monospace; padding:2px 8px; border-radius:4px;">OVERDUE</span>
-        <span style="font-size:10px; color:var(--muted); font-family:'Space Mono',monospace;">Midlands · Black Country ICB</span>
+  </div>
+
+  <!-- RECENTLY AWARDED -->
+  <div style="font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#4caf50; margin-bottom:8px;">Recently Awarded (2024–2026)</div>
+  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+
+    <div style="flex:1 1 220px; background:var(--surface2); border:1px solid rgba(76,175,80,0.2); border-left:3px solid #4caf50; border-radius:8px; padding:12px 16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; flex-wrap:wrap; gap:4px;">
+        <span style="font-size:10px; font-weight:800; font-family:'Space Mono',monospace; color:#4caf50;">AWARDED Oct 2024</span>
+        <a href="https://bidstats.uk/tenders/2024/W43/833093938" target="_blank" rel="noopener" style="font-size:10px; color:var(--nhs-light); font-family:'Space Mono',monospace; text-decoration:none; border:1px solid var(--border); border-radius:4px; padding:2px 6px;">Source ↗</a>
       </div>
-      <div style="font-size:15px; font-weight:800; margin-bottom:4px;">West Midlands IUC — DHU Contract</div>
-      <div style="font-size:11px; color:var(--muted); margin-bottom:10px;">18-month interim from Mar 2023, extended — full competitive tender not yet run · ~25% of England volume</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">Provider: DHU (incumbent)</div>
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace;">~5m calls/yr at risk</div>
-        <div style="font-size:10px; background:var(--surface3); border-radius:4px; padding:4px 10px; font-family:'Space Mono',monospace; color:#ffd54f;">No tender published yet ⚠</div>
+      <div style="font-size:13px; font-weight:800; margin-bottom:3px;">Devon IUC — PPG</div>
+      <div style="font-size:10px; color:var(--muted);">£163.1m · 8yr · Devon ICB · Full IUC (111+CAS+OOH)</div>
+    </div>
+
+    <div style="flex:1 1 220px; background:var(--surface2); border:1px solid rgba(76,175,80,0.2); border-left:3px solid #4caf50; border-radius:8px; padding:12px 16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; flex-wrap:wrap; gap:4px;">
+        <span style="font-size:10px; font-weight:800; font-family:'Space Mono',monospace; color:#4caf50;">AWARDED Nov 2025</span>
+        <a href="https://www.neas.nhs.uk/news-and-events/latest-news/north-east-ambulance-service-provide-nhs-111-services-region" target="_blank" rel="noopener" style="font-size:10px; color:var(--nhs-light); font-family:'Space Mono',monospace; text-decoration:none; border:1px solid var(--border); border-radius:4px; padding:2px 6px;">Source ↗</a>
       </div>
+      <div style="font-size:13px; font-weight:800; margin-bottom:3px;">NE &amp; N. Cumbria 111 — NEAS</div>
+      <div style="font-size:10px; color:var(--muted);">£75m · 5yr from Oct 2025 · NENC ICB · PSR process</div>
+    </div>
+
+    <div style="flex:1 1 220px; background:var(--surface2); border:1px solid rgba(76,175,80,0.2); border-left:3px solid #4caf50; border-radius:8px; padding:12px 16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; flex-wrap:wrap; gap:4px;">
+        <span style="font-size:10px; font-weight:800; font-family:'Space Mono',monospace; color:#4caf50;">AWARDED Mar 2025</span>
+        <a href="https://www.find-tender.service.gov.uk/Notice/009683-2025" target="_blank" rel="noopener" style="font-size:10px; color:var(--nhs-light); font-family:'Space Mono',monospace; text-decoration:none; border:1px solid var(--border); border-radius:4px; padding:2px 6px;">Find a Tender ↗</a>
+      </div>
+      <div style="font-size:13px; font-weight:800; margin-bottom:3px;">Cambridge &amp; Peterborough IUC — IC24</div>
+      <div style="font-size:10px; color:var(--muted);">£103.5m · 5yr from Oct 2025 · C&amp;P ICB · replaces HUC</div>
+    </div>
+
+    <div style="flex:1 1 220px; background:var(--surface2); border:1px solid rgba(76,175,80,0.2); border-left:3px solid #4caf50; border-radius:8px; padding:12px 16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; flex-wrap:wrap; gap:4px;">
+        <span style="font-size:10px; font-weight:800; font-family:'Space Mono',monospace; color:#4caf50;">AWARDED 2026</span>
+        <a href="https://www.find-tender.service.gov.uk/Notice/021274-2026" target="_blank" rel="noopener" style="font-size:10px; color:var(--nhs-light); font-family:'Space Mono',monospace; text-decoration:none; border:1px solid var(--border); border-radius:4px; padding:2px 6px;">Find a Tender ↗</a>
+      </div>
+      <div style="font-size:13px; font-weight:800; margin-bottom:3px;">BOB / Thames Valley IUC — SCAS</div>
+      <div style="font-size:10px; color:var(--muted);">£73.3m · 5yr from Apr 2026 · PSR direct award · BOB+Frimley ICBs</div>
     </div>
 
   </div>
