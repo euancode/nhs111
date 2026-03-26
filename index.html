@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NHS 111 Services Map — England</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nhs-blue: #003087;
+    --nhs-mid: #0072ce;
+    --nhs-light: #41b6e6;
+    --bg: #060c18;
+    --surface: #0d1a2e;
+    --surface2: #132236;
+    --surface3: #1a2e47;
+    --text: #e8f4ff;
+    --muted: #7a9ab8;
+    --border: #1e3a5a;
+
+    --c-nhs: #2196f3;
+    --c-cic: #00bcd4;
+    --c-social: #4caf50;
+    --c-private: #ff9800;
+    --c-joint: #9c27b0;
+
+    /* Provider colors */
+    --neas: #38b2ac;
+    --yas: #4299e1;
+    --nwas: #667eea;
+    --dhu: #f6ad55;
+    --huc: #68d391;
+    --ic24: #4caf50;
+    --las: #fc8181;
+    --ppg: #f093fb;
+    --scas: #63b3ed;
+    --secamb: #f6e05e;
+    --mixed: #b794f4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    padding: 28px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    position: relative;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--nhs-blue), var(--nhs-mid), var(--nhs-light), transparent);
+  }
+  .header-left { display: flex; align-items: center; gap: 20px; }
+  .nhs-badge {
+    width: 44px; height: 44px;
+    background: var(--nhs-mid);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: -0.5px;
+    color: white;
+    flex-shrink: 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  h1 span { color: var(--nhs-light); }
+  .subtitle { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+  .header-stats { display: flex; gap: 28px; }
+  .stat { text-align: right; }
+  .stat-num { font-size: 22px; font-weight: 800; color: var(--nhs-light); font-family: 'Space Mono', monospace; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 0;
+    height: calc(100vh - 97px);
+    min-height: 620px;
+  }
+
+  /* MAP SECTION */
+  .map-section {
+    padding: 28px 20px 20px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  .map-container {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+
+  #england-map {
+    flex-shrink: 0;
+    filter: drop-shadow(0 8px 32px rgba(0,114,206,0.15));
+  }
+
+  /* SVG region paths */
+  .region-path {
+    cursor: pointer;
+    stroke: var(--bg);
+    stroke-width: 2;
+    transition: all 0.2s ease;
+    opacity: 0.85;
+  }
+  .region-path:hover { opacity: 1; stroke-width: 3; filter: brightness(1.15); }
+  .region-path.selected { opacity: 1; stroke: white; stroke-width: 3; filter: brightness(1.2); }
+
+  .map-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    fill: rgba(255,255,255,0.9);
+    pointer-events: none;
+    font-weight: 700;
+    text-anchor: middle;
+  }
+  .map-label-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 7.5px;
+    fill: rgba(255,255,255,0.6);
+    pointer-events: none;
+    text-anchor: middle;
+  }
+
+  /* LEGEND */
+  .legend {
+    flex: 1;
+  }
+  .legend-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-family: 'Space Mono', monospace;
+  }
+  .legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .legend-item:hover { background: var(--surface2); border-color: var(--border); }
+  .legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .legend-name { font-size: 13px; font-weight: 600; }
+  .legend-type { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 1px; }
+
+  /* SIDE PANEL */
+  .side-panel {
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    gap: 12px;
+  }
+  .panel-placeholder .icon { font-size: 40px; opacity: 0.3; }
+  .panel-placeholder p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  .region-detail { display: none; flex-direction: column; }
+  .region-detail.active { display: flex; }
+
+  .detail-header {
+    padding: 20px 24px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .detail-region-label {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .detail-title { font-size: 18px; font-weight: 800; line-height: 1.2; }
+  .detail-color-bar {
+    height: 3px;
+    border-radius: 2px;
+    margin-top: 12px;
+  }
+
+  .detail-body { padding: 20px 24px; flex: 1; overflow-y: auto; }
+
+  .info-block {
+    margin-bottom: 20px;
+  }
+  .info-label {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .info-value {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .info-value.highlight { color: var(--nhs-light); }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    margin: 2px 3px 2px 0;
+  }
+  .tag-nhs { background: rgba(33,150,243,0.2); color: #90caf9; border: 1px solid rgba(33,150,243,0.3); }
+  .tag-cic { background: rgba(0,188,212,0.2); color: #80deea; border: 1px solid rgba(0,188,212,0.3); }
+  .tag-social { background: rgba(76,175,80,0.2); color: #a5d6a7; border: 1px solid rgba(76,175,80,0.3); }
+  .tag-private { background: rgba(255,152,0,0.2); color: #ffcc80; border: 1px solid rgba(255,152,0,0.3); }
+
+  .contract-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    margin-top: 8px;
+  }
+  .cs-active { background: rgba(76,175,80,0.12); border: 1px solid rgba(76,175,80,0.25); color: #a5d6a7; }
+  .cs-renewing { background: rgba(255,193,7,0.12); border: 1px solid rgba(255,193,7,0.25); color: #ffe082; }
+  .cs-new { background: rgba(33,150,243,0.12); border: 1px solid rgba(33,150,243,0.25); color: #90caf9; }
+  .cs-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .cs-active .cs-dot { background: #4caf50; }
+  .cs-renewing .cs-dot { background: #ffc107; animation: pulse 1.5s infinite; }
+  .cs-new .cs-dot { background: #2196f3; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+  .sub-provider {
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .sub-provider-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .sub-provider-area { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  /* TABLE SECTION */
+  .table-section {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    padding: 0 32px 32px;
+    background: var(--bg);
+  }
+  .table-header {
+    padding: 20px 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .table-title { font-size: 16px; font-weight: 800; }
+  .table-note { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  thead th {
+    text-align: left;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td {
+    padding: 10px 12px;
+    vertical-align: top;
+    line-height: 1.4;
+    font-size: 12px;
+  }
+  .provider-cell { font-weight: 700; }
+  .color-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; flex-shrink: 0; vertical-align: middle; }
+  .areas-cell { color: var(--muted); font-size: 11px; }
+  .tech-chip {
+    display: inline-block;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    margin: 1px;
+    color: var(--nhs-light);
+  }
+  .contract-chip {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .chip-active { background: rgba(76,175,80,0.15); color: #81c784; }
+  .chip-renew { background: rgba(255,193,7,0.15); color: #ffd54f; }
+  .chip-new { background: rgba(33,150,243,0.15); color: #64b5f6; }
+  .chip-tender { background: rgba(244,67,54,0.15); color: #ef9a9a; }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; height: auto; }
+    .side-panel { border-left: none; border-top: 1px solid var(--border); }
+    .map-container { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="nhs-badge">111</div>
+    <div>
+      <h1>NHS <span>111</span> Services — England</h1>
+      <div class="subtitle">Provider · Ownership · Technology · Procurement Intelligence</div>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-num">42</div>
+      <div class="stat-label">ICB areas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">~20M</div>
+      <div class="stat-label">calls / yr</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">7</div>
+      <div class="stat-label">NHS regions</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">9</div>
+      <div class="stat-label">lead providers</div>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- MAP + LEGEND -->
+  <div class="map-section">
+    <div class="map-container">
+
+      <!-- SVG Map of England (simplified) -->
+      <svg id="england-map" viewBox="0 0 340 460" width="330" height="460" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background -->
+        <rect width="340" height="460" fill="#060c18" rx="8"/>
+
+        <!-- NORTH WEST region -->
+        <path id="rg-nw" class="region-path" fill="var(--nwas)"
+          d="M 20,30 L 160,30 L 170,50 L 165,100 L 155,130 L 140,160 L 120,175 L 90,180 L 60,170 L 35,150 L 20,120 Z"
+          onclick="selectRegion('nw')" />
+        <text class="map-label" x="92" y="100">NORTH WEST</text>
+        <text class="map-label-sub" x="92" y="112">NWAS</text>
+
+        <!-- NORTH EAST & YORKSHIRE -->
+        <path id="rg-ney" class="region-path" fill="var(--neas)"
+          d="M 165,30 L 310,30 L 320,50 L 315,110 L 295,145 L 270,160 L 240,170 L 210,175 L 185,165 L 165,145 L 155,130 L 165,100 L 170,50 Z"
+          onclick="selectRegion('ney')" />
+        <text class="map-label" x="240" y="85">NE &amp; YORKS</text>
+        <text class="map-label-sub" x="240" y="97">NEAS + YAS</text>
+
+        <!-- MIDLANDS -->
+        <path id="rg-mid" class="region-path" fill="var(--dhu)"
+          d="M 50,180 L 90,180 L 120,175 L 140,160 L 155,130 L 165,145 L 185,165 L 210,175 L 240,170 L 270,160 L 280,190 L 275,230 L 255,255 L 220,265 L 180,268 L 140,260 L 100,250 L 70,235 L 55,215 Z"
+          onclick="selectRegion('mid')" />
+        <text class="map-label" x="165" y="210">MIDLANDS</text>
+        <text class="map-label-sub" x="165" y="222">DHU Healthcare</text>
+
+        <!-- EAST OF ENGLAND -->
+        <path id="rg-eoe" class="region-path" fill="var(--huc)"
+          d="M 255,255 L 275,230 L 280,190 L 305,180 L 320,195 L 325,230 L 318,268 L 305,295 L 285,305 L 265,290 L 250,275 Z"
+          onclick="selectRegion('eoe')" />
+        <text class="map-label" x="292" y="242">EAST OF</text>
+        <text class="map-label-sub" x="292" y="253">ENGLAND</text>
+        <text class="map-label-sub" x="292" y="263">HUC + IC24</text>
+
+        <!-- LONDON (small) -->
+        <path id="rg-lon" class="region-path" fill="var(--las)"
+          d="M 220,275 L 255,268 L 260,285 L 255,305 L 235,310 L 218,305 L 210,290 Z"
+          onclick="selectRegion('lon')" />
+        <text class="map-label" x="237" y="293">LON</text>
+
+        <!-- SOUTH EAST -->
+        <path id="rg-se" class="region-path" fill="var(--scas)"
+          d="M 210,305 L 235,310 L 255,305 L 265,290 L 285,305 L 300,320 L 305,345 L 290,370 L 260,380 L 225,380 L 200,365 L 185,345 L 188,320 Z"
+          onclick="selectRegion('se')" />
+        <text class="map-label" x="247" y="338">SOUTH EAST</text>
+        <text class="map-label-sub" x="247" y="350">SCAS + SECAmb/IC24</text>
+
+        <!-- SOUTH WEST -->
+        <path id="rg-sw" class="region-path" fill="var(--ppg)"
+          d="M 25,270 L 70,235 L 100,250 L 140,260 L 180,268 L 188,310 L 185,345 L 170,360 L 145,375 L 115,380 L 80,375 L 50,360 L 30,340 L 15,310 L 18,285 Z"
+          onclick="selectRegion('sw')" />
+        <text class="map-label" x="108" y="320">SOUTH WEST</text>
+        <text class="map-label-sub" x="108" y="332">PPG + IC24</text>
+
+        <!-- Hover highlight box -->
+        <rect id="hover-box" x="0" y="430" width="338" height="28" rx="4" fill="var(--surface2)" opacity="0.9"/>
+        <text id="hover-text" x="169" y="449" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" fill="#7a9ab8">Click a region to explore</text>
+      </svg>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-title">Providers</div>
+
+        <div class="legend-item" onclick="selectRegion('ney')">
+          <div class="legend-dot" style="background:var(--neas)"></div>
+          <div>
+            <div class="legend-name">NEAS</div>
+            <div class="legend-type">NHS FT · NE & North Cumbria</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('ney')">
+          <div class="legend-dot" style="background:var(--yas)"></div>
+          <div>
+            <div class="legend-name">YAS</div>
+            <div class="legend-type">NHS FT · Yorkshire & Humber</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('nw')">
+          <div class="legend-dot" style="background:var(--nwas)"></div>
+          <div>
+            <div class="legend-name">NWAS</div>
+            <div class="legend-type">NHS FT · North West</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('mid')">
+          <div class="legend-dot" style="background:var(--dhu)"></div>
+          <div>
+            <div class="legend-name">DHU Healthcare</div>
+            <div class="legend-type">CIC · Midlands (all)</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('eoe')">
+          <div class="legend-dot" style="background:var(--huc)"></div>
+          <div>
+            <div class="legend-name">HUC</div>
+            <div class="legend-type">Not-for-profit · East of England (part)</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('eoe')">
+          <div class="legend-dot" style="background:var(--ic24)"></div>
+          <div>
+            <div class="legend-name">IC24</div>
+            <div class="legend-type">Social Enterprise · SE + East of Eng</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('lon')">
+          <div class="legend-dot" style="background:var(--las)"></div>
+          <div>
+            <div class="legend-name">LAS</div>
+            <div class="legend-type">NHS FT · London (part)</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('sw')">
+          <div class="legend-dot" style="background:var(--ppg)"></div>
+          <div>
+            <div class="legend-name">Practice Plus Group</div>
+            <div class="legend-type">Private · SW + London (part)</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('se')">
+          <div class="legend-dot" style="background:var(--scas)"></div>
+          <div>
+            <div class="legend-name">SCAS</div>
+            <div class="legend-type">NHS FT · Hampshire + Thames Valley</div>
+          </div>
+        </div>
+
+        <div class="legend-item" onclick="selectRegion('se')">
+          <div class="legend-dot" style="background:var(--secamb)"></div>
+          <div>
+            <div class="legend-name">SECAmb + IC24</div>
+            <div class="legend-type">NHS FT + Social Enterprise · Kent/Sussex</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+          <div class="legend-title" style="margin-bottom:10px">Ownership type</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="tag tag-nhs">NHS Trust/FT</span>
+            <span class="tag tag-cic">CIC</span>
+            <span class="tag tag-social">Social Enterprise</span>
+            <span class="tag tag-private">Private</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+    <div class="panel-placeholder" id="panel-placeholder">
+      <div class="icon">📍</div>
+      <p>Select a region on the map or legend to view detailed provider, ownership, technology and contract information.</p>
+    </div>
+
+    <!-- NORTH WEST -->
+    <div class="region-detail" id="detail-nw">
+      <div class="detail-header">
+        <div class="detail-region-label">NHS Region</div>
+        <div class="detail-title">North West England</div>
+        <div class="detail-color-bar" style="background:var(--nwas)"></div>
+      </div>
+      <div class="detail-body">
+        <div class="info-block">
+          <div class="info-label">Lead Provider</div>
+          <div class="info-value highlight">North West Ambulance Service (NWAS)</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Coverage</div>
+          <div class="info-value">Cheshire & Merseyside, Greater Manchester, Lancashire & South Cumbria ICBs — serving ~7 million people</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Ownership</div>
+          <span class="tag tag-nhs">NHS Foundation Trust</span>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Commissioner(s)</div>
+          <div class="info-value">Cheshire & Merseyside ICB, Greater Manchester ICB, Lancashire & South Cumbria ICB</div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Technology Stack</div>
+          <span class="tech-chip">NHS Pathways</span>
+          <span class="tech-chip">Adastra (OneAdvanced)</span>
+          <span class="tech-chip">Nat. 111 Telephony</span>
+          <span class="tech-chip">DoS</span>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Triage System</div>
+          <div class="info-value">NHS Pathways (universal England triage tool)</div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Contract Status</div>
+          <div class="contract-status cs-active">
+            <div class="cs-dot"></div>
+            Active — NWAS commissioned directly by ICBs
+          </div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Notes</div>
+          <div class="info-value">NWAS delivers 999, 111 and PTS under integrated model. Part of Northern Ambulance Alliance with NEAS, YAS, EMAS.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NORTH EAST & YORKSHIRE -->
+    <div class="region-detail" id="detail-ney">
+      <div class="detail-header">
+        <div class="detail-region-label">NHS Region</div>
+        <div class="detail-title">North East & Yorkshire</div>
+        <div class="detail-color-bar" style="background: linear-gradient(90deg, var(--neas), var(--yas))"></div>
+      </div>
+      <div class="detail-body">
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--neas)">NEAS — North East Ambulance Service</div>
+          <div class="sub-provider-area">North East & North Cumbria ICB</div>
+        </div>
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--yas)">YAS — Yorkshire Ambulance Service</div>
+          <div class="sub-provider-area">West Yorkshire, South Yorkshire, Humber & North Yorkshire ICBs (incl. Bassetlaw, N. Lincs)</div>
+        </div>
+        <div class="info-block" style="margin-top:16px">
+          <div class="info-label">Coverage</div>
+          <div class="info-value">Durham, Northumberland, Tyne & Wear, Cleveland (NEAS); West/South Yorks, Humber (YAS)</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Ownership</div>
+          <span class="tag tag-nhs">NHS Foundation Trust × 2</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Technology Stack</div>
+          <span class="tech-chip">NHS Pathways</span>
+          <span class="tech-chip">Adastra (OneAdvanced)</span>
+          <span class="tech-chip">Nat. 111 Telephony</span>
+          <span class="tech-chip">BaRS integration</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">NEAS Contract</div>
+          <div class="contract-status cs-new">
+            <div class="cs-dot"></div>
+            NEW contract from Oct 2025 — 5 years, £15m/yr
+          </div>
+          <div class="info-value" style="margin-top:8px; font-size:11px; color:var(--muted)">Awarded by NENC ICB. Runs to ~Oct 2030 (+ options)</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">YAS Contract</div>
+          <div class="contract-status cs-active">
+            <div class="cs-dot"></div>
+            Active — commissioned by respective ICBs
+          </div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Notes</div>
+          <div class="info-value">NEAS handles 1M+ 111 calls per year. YAS is one of highest-performing 111 services. Both in Northern Ambulance Alliance.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDLANDS -->
+    <div class="region-detail" id="detail-mid">
+      <div class="detail-header">
+        <div class="detail-region-label">NHS Region</div>
+        <div class="detail-title">Midlands</div>
+        <div class="detail-color-bar" style="background:var(--dhu)"></div>
+      </div>
+      <div class="detail-body">
+        <div class="info-block">
+          <div class="info-label">Lead Provider</div>
+          <div class="info-value highlight">DHU Healthcare CIC</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Coverage</div>
+          <div class="info-value">Entire Midlands — East Midlands (Derby, Leicester, Nottingham, Northants, Lincs) + West Midlands (Birmingham, Black Country, Coventry, Warwickshire, Worcestershire, Herefordshire, Shropshire). ~10m+ people, ~5m calls/yr (25% of England's total)</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Ownership</div>
+          <span class="tag tag-cic">Community Interest Company (CIC)</span>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted)">Not-for-profit social enterprise. Subsidiary: DHU 111 (East Midlands) CIC</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Key Commissioners</div>
+          <div class="info-value">Black Country ICB (lead), Derby & Derbyshire, Leicester, Nottingham, Birmingham & Solihull, and others acting jointly</div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Technology Stack</div>
+          <span class="tech-chip">NHS Pathways</span>
+          <span class="tech-chip">Adastra (OneAdvanced)</span>
+          <span class="tech-chip">Nat. 111 Telephony</span>
+          <span class="tech-chip">DoS</span>
+          <span class="tech-chip">National Contingency System</span>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Call Centres</div>
+          <div class="info-value">Derby, Chesterfield, Leicester, Chippenham; National contingency hub in Oldbury (W. Midlands)</div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">West Midlands Contract</div>
+          <div class="contract-status cs-new">
+            <div class="cs-dot"></div>
+            Awarded ~2023 — initial 18-month period (extended)
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted)">WMAS handed back contract to commissioners; DHU took over from March 2023. Black Country ICB is lead commissioner.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">East Midlands Contract</div>
+          <div class="contract-status cs-active">
+            <div class="cs-dot"></div>
+            Active — DHU has delivered E. Midlands since 2010
+          </div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">CQC Rating</div>
+          <div class="info-value" style="color:#81c784">★ Outstanding (CQC)</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Notes</div>
+          <div class="info-value">Largest single NHS 111 provider in England. Also provides national contingency capacity supporting other regions.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EAST OF ENGLAND -->
+    <div class="region-detail" id="detail-eoe">
+      <div class="detail-header">
+        <div class="detail-region-label">NHS Region</div>
+        <div class="detail-title">East of England</div>
+        <div class="detail-color-bar" style="background: linear-gradient(90deg, var(--huc), var(--ic24))"></div>
+      </div>
+      <div class="detail-body">
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--huc)">HUC (Herts Urgent Care)</div>
+          <div class="sub-provider-area">Hertfordshire & West Essex ICB; Bedfordshire, Luton & Milton Keynes ICB</div>
+        </div>
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--ic24)">IC24 (Integrated Care 24)</div>
+          <div class="sub-provider-area">Norfolk & Waveney ICB; Mid & South Essex ICB; Suffolk & NE Essex ICB; Cambridge & Peterborough ICB (new, Nov 2025)</div>
+        </div>
+        <div class="info-block" style="margin-top:16px">
+          <div class="info-label">Ownership</div>
+          <span class="tag tag-social">HUC: Not-for-profit</span>
+          <span class="tag tag-social">IC24: Social Enterprise</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Technology Stack</div>
+          <span class="tech-chip">NHS Pathways</span>
+          <span class="tech-chip">Adastra (OneAdvanced)</span>
+          <span class="tech-chip">Nat. 111 Telephony</span>
+          <span class="tech-chip">DoS</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">IC24 Cambridge & Peterborough Contract</div>
+          <div class="contract-status cs-new">
+            <div class="cs-dot"></div>
+            Awarded Nov 2025 — IC24 takes over from HUC
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted)">£103.5m over 5 years (with extension option). Replaces HUC as provider for C&P area.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">HUC Areas Contract</div>
+          <div class="contract-status cs-active">
+            <div class="cs-dot"></div>
+            Active (HUC — Herts, Beds, W. Essex)
+          </div>
+          <div style="font-size:11px; color:var(--muted); margin-top:4px">HUC supports ~4.5m patients; 24/7 NHS 111 + OOH GP</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Notes</div>
+          <div class="info-value">Region is undergoing significant change — ICB mergers from Apr 2026 (Norfolk + Suffolk → Norfolk & Suffolk ICB; new Essex ICB). Contracts expected to align with new boundaries.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LONDON -->
+    <div class="region-detail" id="detail-lon">
+      <div class="detail-header">
+        <div class="detail-region-label">NHS Region</div>
+        <div class="detail-title">London</div>
+        <div class="detail-color-bar" style="background: linear-gradient(90deg, var(--las), var(--ppg))"></div>
+      </div>
+      <div class="detail-body">
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--las)">LAS — London Ambulance Service</div>
+          <div class="sub-provider-area">North East London ICB (current, tendering for Aug 2026); North West London ICB</div>
+        </div>
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--ppg)">Practice Plus Group (PPG)</div>
+          <div class="sub-provider-area">South West London IUC; North Central London (part)</div>
+        </div>
+        <div class="info-block" style="margin-top:16px">
+          <div class="info-label">Ownership</div>
+          <span class="tag tag-nhs">LAS: NHS Foundation Trust</span>
+          <span class="tag tag-private">PPG: Private Company</span>
+        </div>
+        <div class="info-block">
+          <div class="info-label">PPG Call Centres (London)</div>
+          <div class="info-value">Dorking (Surrey) serving SW London; Uxbridge (NW London)</div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Technology Stack</div>
+          <span class="tech-chip">NHS Pathways</span>
+          <span class="tech-chip">Adastra (OneAdvanced)</span>
+          <span class="tech-chip">Nat. 111 Telephony</span>
+          <span class="tech-chip">DoS</span>
+          <span class="tech-chip">BaRS</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">NEL ICB Contract (LAS)</div>
+          <div class="contract-status cs-renewing">
+            <div class="cs-dot"></div>
+            Tendering NOW — new contract from Aug 2026
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted)">£152m indicative total (3+2+2 yr); ITT deadline Jul 2025. Procurement managed by NHS London Commercial Hub.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">NWL ICB Contract (LAS)</div>
+          <div class="contract-status cs-new">
+            <div class="cs-dot"></div>
+            3-year contract — recently awarded to LAS (Nov 2022+)
+          </div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">ICB Mergers (Apr 2026)</div>
+          <div class="info-value" style="color:#ffd54f">⚠️ North Central & NW London ICBs merging → new West & North London ICB. Will affect commissioning structure for 111.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Notes</div>
+          <div class="info-value">London has the most complex provider landscape. PPG has national IUC resilience centre in Stockton-on-Tees. LAS integration with 999 enables faster escalation.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOUTH EAST -->
+    <div class="region-detail" id="detail-se">
+      <div class="detail-header">
+        <div class="detail-region-label">NHS Region</div>
+        <div class="detail-title">South East England</div>
+        <div class="detail-color-bar" style="background: linear-gradient(90deg, var(--scas), var(--secamb))"></div>
+      </div>
+      <div class="detail-body">
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--scas)">SCAS — South Central Ambulance Service</div>
+          <div class="sub-provider-area">Buckinghamshire, Oxfordshire & Berkshire West ICB (BOB); Hampshire & Isle of Wight ICB</div>
+        </div>
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--secamb)">SECAmb + IC24 (joint)</div>
+          <div class="sub-provider-area">Kent & Medway ICB; Sussex ICBs (East & West Sussex)</div>
+        </div>
+        <div class="info-block" style="margin-top:16px">
+          <div class="info-label">Coverage</div>
+          <div class="info-value">Berkshire, Buckinghamshire, Oxfordshire, Hampshire, Surrey, Kent, Medway, East Sussex, West Sussex</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Ownership</div>
+          <span class="tag tag-nhs">SCAS: NHS Foundation Trust</span>
+          <span class="tag tag-nhs">SECAmb: NHS Foundation Trust</span>
+          <span class="tag tag-social">IC24: Social Enterprise</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Technology Stack</div>
+          <span class="tech-chip">NHS Pathways</span>
+          <span class="tech-chip">Adastra (SCAS, IC24)</span>
+          <span class="tech-chip">Cleric (SECAmb)</span>
+          <span class="tech-chip">Nat. 111 Telephony</span>
+          <span class="tech-chip">KMCR (Kent record access)</span>
+          <span class="tech-chip">EPS integrated</span>
+          <span class="tech-chip">DAB (Direct Appt Booking)</span>
+        </div>
+        <div class="info-block">
+          <div class="info-label">SECAmb Tech Note</div>
+          <div class="info-value">SECAmb uses <strong>Cleric</strong> CAD (same system for 999 + 111) rather than Adastra. First trust to implement Electronic Prescribing Service (EPS) in its CAD.</div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">SCAS BOB ICB Contract</div>
+          <div class="contract-status cs-active">
+            <div class="cs-dot"></div>
+            Active — evidence of satisfactory performance published 2026
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted)">SCAS continuously commissioned; Thames Valley contract awarded 2017.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Kent & Medway Contract (SECAmb/IC24)</div>
+          <div class="contract-status cs-active">
+            <div class="cs-dot"></div>
+            Joint CAS contract — £90.5m valuation (combined K&M + Sussex)
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted)">SECAmb won joint contract, mobilised Oct 2020. IC24 co-delivers call handling in Sussex.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Notes</div>
+          <div class="info-value">SECAmb operates from Gillingham (integrated 999+111 ops). Kent & Medway Care Record gives clinicians shared patient record access.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOUTH WEST -->
+    <div class="region-detail" id="detail-sw">
+      <div class="detail-header">
+        <div class="detail-region-label">NHS Region</div>
+        <div class="detail-title">South West England</div>
+        <div class="detail-color-bar" style="background: linear-gradient(90deg, var(--ppg), var(--ic24))"></div>
+      </div>
+      <div class="detail-body">
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--ppg)">Practice Plus Group (PPG)</div>
+          <div class="sub-provider-area">Bristol/BNSSG ICB; Bath/North Somerset/Swindon/Wilts (BSW) ICB; Devon ICB (inc. contract support)</div>
+        </div>
+        <div class="sub-provider">
+          <div class="sub-provider-name" style="color:var(--ic24)">IC24 (Integrated Care 24)</div>
+          <div class="sub-provider-area">Gloucestershire ICB (and some support to SW area)</div>
+        </div>
+        <div class="info-block" style="margin-top:16px">
+          <div class="info-label">Coverage</div>
+          <div class="info-value">Bristol, N. Somerset, S. Gloucestershire, Bath, Swindon, Wiltshire, Devon, Gloucestershire, Dorset</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Ownership</div>
+          <span class="tag tag-private">PPG: Private Company</span>
+          <span class="tag tag-social">IC24: Social Enterprise</span>
+        </div>
+        <div class="info-block">
+          <div class="info-label">PPG Call Centres (SW)</div>
+          <div class="info-value">Bristol (BNSSG + BSW); Exeter (Devon); National resilience: Stockton-on-Tees</div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Technology Stack</div>
+          <span class="tech-chip">NHS Pathways</span>
+          <span class="tech-chip">Adastra (OneAdvanced)</span>
+          <span class="tech-chip">Nat. 111 Telephony</span>
+          <span class="tech-chip">DoS</span>
+          <span class="tech-chip">IUC CAS integrated</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-block">
+          <div class="info-label">Devon IUC Contract (PPG)</div>
+          <div class="contract-status cs-new">
+            <div class="cs-dot"></div>
+            Awarded Oct 2024 — 8 years (with options), £163.1m
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted)">Full IUC (111 + CAS + OOH GP) for NHS Devon ICB. ~8yr to ~2032.</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">BNSSG Contract (PPG)</div>
+          <div class="contract-status cs-new">
+            <div class="cs-dot"></div>
+            Awarded Aug 2024 (PPG wins over previous provider)
+          </div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">PPG Total Footprint (England)</div>
+          <div class="info-value">7 NHS 111 contracts, ~8.7m population, 2.8m+ calls/yr across all sites (SW, London, Ipswich)</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">Notes</div>
+          <div class="info-value">PPG is the only major private-sector NHS 111 provider. Formerly included Vocare/Totally contracts (Totally plc went into administration Jun 2025; Vocare assets sold to PHL Group).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULL CONTRACT TABLE -->
+<div class="table-section">
+  <div class="table-header">
+    <div class="table-title">Complete NHS 111 Provider Register — England 2025/26</div>
+    <div class="table-note">Data from public procurement notices, provider sites &amp; NHS England · Mar 2026</div>
+  </div>
+  <div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>Region</th>
+        <th>Provider</th>
+        <th>ICB(s) / Areas covered</th>
+        <th>Ownership type</th>
+        <th>Technology</th>
+        <th>Contract / Procurement status</th>
+        <th>Est. value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>North West</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--nwas)"></span>NWAS</td>
+        <td class="areas-cell">Cheshire & Merseyside · Greater Manchester · Lancashire & South Cumbria</td>
+        <td><span class="tag tag-nhs">NHS FT</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span></td>
+        <td><span class="contract-chip chip-active">Active</span> — commissioned by 3 ICBs</td>
+        <td class="areas-cell">—</td>
+      </tr>
+      <tr>
+        <td>NE & Yorkshire</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--neas)"></span>NEAS</td>
+        <td class="areas-cell">North East & North Cumbria ICB (Durham, Northumberland, Tyne & Wear, Teesside)</td>
+        <td><span class="tag tag-nhs">NHS FT</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span></td>
+        <td><span class="contract-chip chip-new">NEW Oct 2025</span> — 5 yrs, awarded by NENC ICB, runs to ~Oct 2030</td>
+        <td class="areas-cell">£15m/yr · £75m total</td>
+      </tr>
+      <tr>
+        <td>NE & Yorkshire</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--yas)"></span>YAS</td>
+        <td class="areas-cell">West Yorkshire · South Yorkshire · Humber & North Yorkshire (incl. Bassetlaw, N. Lincs, NE Lincs)</td>
+        <td><span class="tag tag-nhs">NHS FT</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span></td>
+        <td><span class="contract-chip chip-active">Active</span> — commissioned by respective ICBs</td>
+        <td class="areas-cell">—</td>
+      </tr>
+      <tr>
+        <td>Midlands</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--dhu)"></span>DHU Healthcare CIC</td>
+        <td class="areas-cell">Derby & Derbyshire · Leicester, Leics & Rutland · Nottingham & Notts · Lincolnshire · Northamptonshire · Birmingham & Solihull · Black Country · Coventry & Warwickshire · Herefordshire & Worcestershire · Shropshire, Telford & Wrekin</td>
+        <td><span class="tag tag-cic">CIC (not-for-profit)</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span><span class="tech-chip">Nat. Contingency</span></td>
+        <td><span class="contract-chip chip-active">Active</span> — East Midlands since 2010; West Midlands from Mar 2023 (Black Country ICB lead). 18-month initial + extensions</td>
+        <td class="areas-cell">Largest provider — ~5m calls/yr</td>
+      </tr>
+      <tr>
+        <td>East of England</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--huc)"></span>HUC</td>
+        <td class="areas-cell">Hertfordshire & West Essex · Bedfordshire, Luton & MK (part)</td>
+        <td><span class="tag tag-social">Not-for-profit</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span></td>
+        <td><span class="contract-chip chip-active">Active</span> — 4.5m patients; losing C&P contract to IC24 (Nov 2025 award)</td>
+        <td class="areas-cell">—</td>
+      </tr>
+      <tr>
+        <td>East of England</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--ic24)"></span>IC24</td>
+        <td class="areas-cell">Norfolk & Waveney · Mid & South Essex · Suffolk & NE Essex · Cambridge & Peterborough (new Nov 2025)</td>
+        <td><span class="tag tag-social">Social Enterprise</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span></td>
+        <td><span class="contract-chip chip-new">C&P NEW Nov 2025</span> — £103.5m/5yrs (+ 2yr option). Others ongoing.</td>
+        <td class="areas-cell">£103.5m (C&P alone)</td>
+      </tr>
+      <tr>
+        <td>London</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--las)"></span>LAS</td>
+        <td class="areas-cell">North East London (Barking & Dagenham, City & Hackney, Havering, Newham, Redbridge, Tower Hamlets, Waltham Forest) · North West London</td>
+        <td><span class="tag tag-nhs">NHS FT</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span><span class="tech-chip">BaRS</span></td>
+        <td><span class="contract-chip chip-tender">NEL RE-TENDER</span> — new contract from Aug 2026 (ITT closed Jul 2025, £152m 7yr). NWL: active 3-yr contract</td>
+        <td class="areas-cell">£152m total (NEL)</td>
+      </tr>
+      <tr>
+        <td>London</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--ppg)"></span>Practice Plus Group</td>
+        <td class="areas-cell">South West London IUC · North Central / North West London (part)</td>
+        <td><span class="tag tag-private">Private</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span></td>
+        <td><span class="contract-chip chip-active">Active</span> — multiple London ICB contracts</td>
+        <td class="areas-cell">—</td>
+      </tr>
+      <tr>
+        <td>South East</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--scas)"></span>SCAS</td>
+        <td class="areas-cell">Buckinghamshire, Oxfordshire & Berkshire West (BOB) · Hampshire & Isle of Wight</td>
+        <td><span class="tag tag-nhs">NHS FT</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span><span class="tech-chip">Nat. 111 Telephony</span></td>
+        <td><span class="contract-chip chip-active">Active</span> — Thames Valley awarded 2017; BOB re-procurement evidence published 2026 (contract compliant)</td>
+        <td class="areas-cell">—</td>
+      </tr>
+      <tr>
+        <td>South East</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--secamb)"></span>SECAmb + IC24 (joint)</td>
+        <td class="areas-cell">Kent & Medway · East Sussex · West Sussex (Surrey: SECAmb elements)</td>
+        <td><span class="tag tag-nhs">SECAmb: NHS FT</span> <span class="tag tag-social">IC24: Social Ent.</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Cleric CAD</span><span class="tech-chip">EPS integrated</span><span class="tech-chip">KMCR record access</span><span class="tech-chip">DAB</span></td>
+        <td><span class="contract-chip chip-active">Active</span> — joint IUC CAS contract. Mobilised Oct 2020. Combined £90.5m valuation for K&M + Sussex</td>
+        <td class="areas-cell">£90.5m (K&M + Sussex)</td>
+      </tr>
+      <tr>
+        <td>South West</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--ppg)"></span>Practice Plus Group</td>
+        <td class="areas-cell">Bristol, North Somerset & South Gloucestershire (BNSSG) · Bath, NE Somerset, Swindon & Wilts (BSW) · Devon · Ipswich/E. Suffolk</td>
+        <td><span class="tag tag-private">Private</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span><span class="tech-chip">IUC CAS</span></td>
+        <td><span class="contract-chip chip-new">Devon: NEW Oct 2024</span> £163.1m/8yr. <span class="contract-chip chip-new">BNSSG: NEW Aug 2024</span></td>
+        <td class="areas-cell">£163.1m (Devon, 8yr)</td>
+      </tr>
+      <tr>
+        <td>South West</td>
+        <td class="provider-cell"><span class="color-dot" style="background:var(--ic24)"></span>IC24</td>
+        <td class="areas-cell">Gloucestershire ICB</td>
+        <td><span class="tag tag-social">Social Enterprise</span></td>
+        <td><span class="tech-chip">NHS Pathways</span><span class="tech-chip">Adastra</span></td>
+        <td><span class="contract-chip chip-active">Active</span></td>
+        <td class="areas-cell">—</td>
+      </tr>
+      <tr style="background: rgba(255,152,0,0.04)">
+        <td colspan="7" style="padding: 14px 12px; font-size:11px; color:var(--muted); font-family:'Space Mono',monospace; line-height:1.7;">
+          <strong style="color:var(--text)">Universal infrastructure (all providers):</strong> &nbsp;
+          NHS Pathways (triage algorithm — NHS Digital) · National 111 Telephony Platform (BT/NHS) · Directory of Services (DoS) · Booking & Referral Standard (BaRS) · NHS App / 111 Online (NHS Digital) · Summary Care Record access · Electronic Prescription Service (EPS)
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          <strong style="color:var(--text)">Key market shift:</strong> Totally plc (Vocare parent) went into administration Jun 2025 — contracts sold to PHL Group. Staffordshire: Totally/PHL held separate arrangements.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<script>
+  let selected = null;
+
+  const regionData = {
+    nw:  'North West England',
+    ney: 'North East & Yorkshire',
+    mid: 'Midlands',
+    eoe: 'East of England',
+    lon: 'London',
+    se:  'South East England',
+    sw:  'South West England'
+  };
+
+  function selectRegion(id) {
+    // Reset previous
+    if (selected) {
+      document.getElementById('rg-' + selected)?.classList.remove('selected');
+      document.getElementById('detail-' + selected)?.classList.remove('active');
+    }
+
+    // Activate new
+    selected = id;
+    document.getElementById('rg-' + id)?.classList.add('selected');
+
+    // Hide placeholder, show detail
+    document.getElementById('panel-placeholder').style.display = 'none';
+    document.querySelectorAll('.region-detail').forEach(d => d.classList.remove('active'));
+    document.getElementById('detail-' + id)?.classList.add('active');
+
+    // Update hover text
+    document.getElementById('hover-text').textContent = regionData[id] || '';
+  }
+
+  // Hover effect on map
+  document.querySelectorAll('.region-path').forEach(path => {
+    path.addEventListener('mouseenter', () => {
+      const id = path.id.replace('rg-', '');
+      document.getElementById('hover-text').textContent = regionData[id] || '';
+    });
+    path.addEventListener('mouseleave', () => {
+      if (selected) {
+        document.getElementById('hover-text').textContent = regionData[selected] || '';
+      } else {
+        document.getElementById('hover-text').textContent = 'Click a region to explore';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
