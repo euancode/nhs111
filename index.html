@@ -645,6 +645,25 @@
   </div>
 </div>
 
+<!-- CONTRACT PIPELINE TIMELINE -->
+<div id="contract-timeline" style="background:var(--surface); border-bottom:1px solid var(--border); padding:20px 40px 28px;">
+  <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:12px;">
+    <span style="font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;">Contract Pipeline</span>
+    <span style="font-size:11px; color:var(--muted); font-family:'Space Mono',monospace;">All known NHS 111 / IUC contracts · England 2019–2034</span>
+  </div>
+  <div style="display:flex; gap:20px; margin-bottom:14px; flex-wrap:wrap; font-size:10px; font-family:'Space Mono',monospace; color:var(--muted); align-items:center;">
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:18px;height:9px;background:#4caf50;border-radius:2px;display:inline-block;opacity:0.85;"></span>Active</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:18px;height:9px;background:#fc8181;border-radius:2px;display:inline-block;opacity:0.55;"></span>Expired — no re-procurement</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:18px;height:9px;display:inline-block;border:2px dashed #f6ad55;border-radius:2px;background:rgba(246,173,85,0.18);"></span>On extension / overdue</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:18px;height:9px;background:#b794f4;border-radius:2px;display:inline-block;opacity:0.65;border:1px solid #b794f4;"></span>Awarded / pre-market</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:18px;height:9px;display:inline-block;background:repeating-linear-gradient(45deg,rgba(122,154,184,0.15),rgba(122,154,184,0.15) 2px,transparent 2px,transparent 6px);border:1px solid rgba(122,154,184,0.3);border-radius:2px;"></span>Unknown end date</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:2px;height:14px;background:rgba(255,255,255,0.7);display:inline-block;"></span>Today</span>
+  </div>
+  <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+    <div id="pipeline-chart"></div>
+  </div>
+</div>
+
 <div class="main">
   <!-- MAP + LEGEND -->
   <div class="map-section">
@@ -1768,6 +1787,178 @@
   </table>
   </div>
 </div>
+
+<script>
+(function renderPipeline() {
+  const LABEL_W = 210;
+  const PX_PER_YEAR = 76;
+  const BAR_H = 18;
+  const ROW_H = 28;
+  const START_YEAR = 2019;
+  const END_YEAR = 2034;
+  const CHART_W = (END_YEAR - START_YEAR) * PX_PER_YEAR;
+  const HEADER_H = 30;
+  // Today = Apr 2026
+  const TODAY_X = ((2026 - START_YEAR) + 3/12) * PX_PER_YEAR;
+
+  function x(year, month) {
+    return ((year - START_YEAR) + (month - 1) / 12) * PX_PER_YEAR;
+  }
+
+  const groups = [
+    { region: 'North West', rows: [
+      { label: 'NWAS — Ch&M · GM · LSC ICBs', color: '#667eea', start: [2023,10], end: [2026,3], status: 'expired', note: 'Contracts expired ~Mar 2026. No re-procurement published.' },
+    ]},
+    { region: 'NE & Yorkshire', rows: [
+      { label: 'YAS — W.Yorks · S.Yorks · H&NY ICBs', color: '#4299e1', start: [2019,4], end: [2026,3], status: 'expired', note: 'Original 5yr + 2yr extension expired ~Mar 2026. No re-procurement published.' },
+      { label: 'NEAS — NENC ICB', color: '#38b2ac', start: [2025,10], end: [2030,10], status: 'active', note: 'PSR direct award. £75m / 5yr. Oct 2025 – Oct 2030.' },
+    ]},
+    { region: 'Midlands', rows: [
+      { label: 'DHU — East Midlands (5 ICBs)', color: '#f6ad55', start: [2019,1], end: null, status: 'active-unknown', note: 'DHU has held East Midlands since ~2010. Contract end not publicly disclosed.' },
+      { label: 'DHU — West Midlands (5 ICBs)', color: '#f6ad55', start: [2023,3], end: null, status: 'overdue', note: 'Interim from Mar 2023, extended past Sep 2024 expiry. No full tender published.' },
+      { label: 'Staffordshire & Stoke ICB', color: '#7a9ab8', start: null, end: null, status: 'unknown', note: '111 call-handling likely absorbed by DHU. OOH: PHL/StDUC post-Totally admin.' },
+    ]},
+    { region: 'East of England', rows: [
+      { label: 'HUC — Herts & West Essex ICB', color: '#68d391', start: [2024,6], end: [2028,3], status: 'active', note: 'PSR modification notice 023355-2024. Jun 2024 – Mar 2028.' },
+      { label: 'HUC — BLMK ICB', color: '#68d391', start: null, end: null, status: 'unknown', note: 'Contract end date not publicly disclosed.' },
+      { label: 'IC24 — C&P ICB', color: '#4caf50', start: [2025,10], end: [2030,10], status: 'active', note: 'Competitive process. £103.5m / 5yr + 2yr option. Oct 2025 – Oct 2030.' },
+      { label: 'IC24 — Norfolk · Suffolk · Essex ICBs', color: '#4caf50', start: null, end: null, status: 'unknown', note: 'IC24 holds contracts for Norfolk & Waveney, Mid & South Essex, Suffolk & NE Essex ICBs. End dates not disclosed.' },
+    ]},
+    { region: 'London', rows: [
+      { label: 'LAS — NWL ICB', color: '#fc8181', start: [2022,11], end: [2025,11], status: 'expired', note: '3-yr contract from Nov 2022. Likely extended.' },
+      { label: 'LAS + LCW — NCL ICB', color: '#fc8181', start: [2023,11], end: null, status: 'active-unknown', note: 'LAS + London Central & West (LCW). ~£19m/yr. From Nov 2023.' },
+      { label: 'NEL IUC (new contract)', color: '#fc8181', start: [2026,8], end: [2033,7], status: 'awarded', note: 'Awarded 2025. £152.2m / 7yr (3+2+2). Starts Aug 2026. Winner not yet publicly named.' },
+      { label: 'PPG — SWL ICB', color: '#f093fb', start: null, end: null, status: 'unknown', note: 'PPG holds South West London IUC contract. Dates not publicly disclosed.' },
+      { label: 'SEL ICB — new service target', color: '#b794f4', start: [2027,4], end: null, status: 'pre-market', note: 'Pre-procurement underway. Current contract expires Mar 2027. Target start Apr 2027.' },
+    ]},
+    { region: 'South East', rows: [
+      { label: 'SECAmb + IC24 — K&M · Sussex ICBs', color: '#f6e05e', start: [2020,10], end: null, status: 'active-unknown', note: 'Joint IUC CAS contract. £90.5m combined. Mobilised Oct 2020. End date unknown.' },
+      { label: 'SCAS — BOB + Frimley ICBs', color: '#63b3ed', start: [2026,4], end: [2031,3], status: 'active', note: 'PSR direct award. £73.3m / 5yr. Apr 2026 – Mar 2031.' },
+      { label: 'SCAS — HIOW ICB', color: '#63b3ed', start: null, end: null, status: 'unknown', note: 'SCAS holds HIOW contract. Dates not publicly disclosed.' },
+      { label: 'Surrey Heartlands ICB', color: '#7a9ab8', start: null, end: null, status: 'unknown', note: 'Provider and contract not publicly known.' },
+    ]},
+    { region: 'South West', rows: [
+      { label: 'DHC — Dorset ICB', color: '#38b2ac', start: [2020,5], end: null, status: 'active-unknown', note: 'Dorset HealthCare University NHS FT. Took over from SWAST May 2020. End date unknown.' },
+      { label: 'PPG — BNSSG ICB', color: '#f093fb', start: [2024,8], end: null, status: 'active-unknown', note: 'PPG awarded Aug 2024. End date not publicly disclosed.' },
+      { label: 'PPG — BSW ICB', color: '#f093fb', start: null, end: null, status: 'unknown', note: 'PPG holds BSW contract. Dates not publicly disclosed.' },
+      { label: 'PPG — Devon ICB', color: '#f093fb', start: [2024,10], end: [2032,10], status: 'active', note: 'Competitive process. £163.1m / 8yr. Oct 2024 – Oct 2032.' },
+      { label: 'IC24 — Gloucestershire ICB', color: '#4caf50', start: null, end: null, status: 'unknown', note: 'IC24 holds Gloucestershire. Dates not publicly disclosed.' },
+      { label: 'Cornwall & Isles of Scilly ICB', color: '#7a9ab8', start: null, end: null, status: 'unknown', note: 'Provider and contract not publicly known.' },
+    ]},
+  ];
+
+  // Build HTML
+  let totalH = HEADER_H;
+  groups.forEach(g => { totalH += 20 + g.rows.length * ROW_H + 10; });
+
+  let html = `<div style="position:relative; width:${LABEL_W + CHART_W}px; height:${totalH}px; font-family:'Space Mono',monospace;">`;
+
+  // Year grid + header
+  html += `<div style="position:absolute; left:${LABEL_W}px; top:0; width:${CHART_W}px; height:${totalH}px;">`;
+  for (let y = START_YEAR; y <= END_YEAR; y++) {
+    const lx = (y - START_YEAR) * PX_PER_YEAR;
+    const isHalf = false;
+    html += `<div style="position:absolute;left:${lx}px;top:0;bottom:0;border-left:1px solid rgba(30,58,90,0.7);"></div>`;
+    html += `<div style="position:absolute;left:${lx + 3}px;top:6px;font-size:9px;color:var(--muted);white-space:nowrap;">${y}</div>`;
+  }
+  // Half-year ticks
+  for (let y = START_YEAR; y < END_YEAR; y++) {
+    const lx = (y - START_YEAR + 0.5) * PX_PER_YEAR;
+    html += `<div style="position:absolute;left:${lx}px;top:0;bottom:0;border-left:1px solid rgba(30,58,90,0.35);"></div>`;
+  }
+  // Today line
+  html += `<div style="position:absolute;left:${TODAY_X}px;top:0;bottom:0;border-left:2px solid rgba(255,255,255,0.55);z-index:5;pointer-events:none;">`;
+  html += `<span style="position:absolute;top:6px;left:4px;font-size:9px;color:rgba(255,255,255,0.7);white-space:nowrap;">Apr 2026</span>`;
+  html += `</div>`;
+  html += `</div>`; // end grid layer
+
+  let rowTop = HEADER_H;
+
+  groups.forEach((group, gi) => {
+    // Region label row
+    html += `<div style="position:absolute;left:0;top:${rowTop}px;width:${LABEL_W + CHART_W}px;height:20px;display:flex;align-items:center;">`;
+    html += `<div style="width:${LABEL_W}px;flex-shrink:0;padding-right:10px;text-align:right;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">${group.region}</div>`;
+    html += `<div style="flex:1;height:1px;background:var(--border);"></div>`;
+    html += `</div>`;
+    rowTop += 20;
+
+    group.rows.forEach(row => {
+      const barTop = rowTop + (ROW_H - BAR_H) / 2;
+
+      // Row label
+      html += `<div style="position:absolute;left:0;top:${rowTop}px;width:${LABEL_W - 8}px;height:${ROW_H}px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;">`;
+      html += `<span style="font-size:9.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${LABEL_W - 12}px;" title="${row.label}">${row.label}</span>`;
+      html += `</div>`;
+
+      if (row.start !== null) {
+        const bx = x(row.start[0], row.start[1]);
+        let bw, bgStyle, opacity = 1, extraStyle = '';
+
+        if (row.end !== null) {
+          bw = x(row.end[0], row.end[1]) - bx;
+        } else {
+          bw = CHART_W - bx;
+        }
+
+        switch (row.status) {
+          case 'active':
+            bgStyle = row.color;
+            opacity = 0.82;
+            break;
+          case 'active-unknown':
+            bgStyle = `linear-gradient(90deg, ${row.color} 55%, transparent 100%)`;
+            opacity = 0.82;
+            break;
+          case 'expired':
+            bgStyle = '#fc8181';
+            opacity = 0.45;
+            extraStyle = 'background-image:repeating-linear-gradient(45deg,rgba(0,0,0,0.15),rgba(0,0,0,0.15) 2px,transparent 2px,transparent 8px);';
+            break;
+          case 'overdue':
+            bgStyle = row.color;
+            opacity = 0.72;
+            extraStyle = `border:2px dashed #f6ad55;`;
+            bgStyle = `linear-gradient(90deg, ${row.color} 55%, transparent 100%)`;
+            break;
+          case 'awarded':
+            bgStyle = row.color;
+            opacity = 0.65;
+            extraStyle = `border:1.5px solid #4caf50;`;
+            break;
+          case 'pre-market':
+            bgStyle = row.color;
+            opacity = 0.35;
+            extraStyle = `border:1.5px solid ${row.color};`;
+            break;
+        }
+
+        const tooltip = (row.note || row.label).replace(/"/g, '&quot;');
+        html += `<div title="${tooltip}" style="position:absolute;left:${LABEL_W + bx}px;top:${barTop}px;width:${bw}px;height:${BAR_H}px;background:${bgStyle};opacity:${opacity};border-radius:3px;${extraStyle}cursor:default;"></div>`;
+
+        // Start date marker
+        html += `<div style="position:absolute;left:${LABEL_W + bx}px;top:${barTop - 3}px;width:2px;height:${BAR_H + 6}px;background:${row.color};opacity:0.6;border-radius:1px;"></div>`;
+
+        // End marker if known
+        if (row.end !== null && row.status !== 'expired') {
+          const ex = x(row.end[0], row.end[1]);
+          html += `<div style="position:absolute;left:${LABEL_W + ex - 1}px;top:${barTop - 3}px;width:2px;height:${BAR_H + 6}px;background:${row.color};opacity:0.6;border-radius:1px;"></div>`;
+        }
+
+      } else {
+        // Unknown — show dotted placeholder
+        html += `<div style="position:absolute;left:${LABEL_W + 4}px;top:${barTop + 4}px;font-size:9px;color:rgba(122,154,184,0.5);">contract dates unknown</div>`;
+      }
+
+      rowTop += ROW_H;
+    });
+
+    rowTop += 10; // gap between groups
+  });
+
+  html += `</div>`;
+  document.getElementById('pipeline-chart').innerHTML = html;
+})();
+</script>
 
 <script>
   let selected = null;
